@@ -11,7 +11,7 @@ class Velocity:
     def __init__(self, x=0.0, y=0.0, speed=1):
         self.x = x
         self.y = y
-        self.speed = 1
+        self.speed = speed
 
 
 class Renderable(Sprite):
@@ -28,13 +28,12 @@ class Renderable(Sprite):
         if not static:
             self.load_spritesheet()
 
-    def draw(self):
+    def on_draw(self):
         if self.hover:
             draw_rectangle_outline(self.center_x, self.center_y, self.width, self.height, color.WHITE, 1)
             print('hovered')
 
     def load_spritesheet(self):
-        # 8 "up"
         for i in range(8):
             self.walking_textures[UP].append(load_texture(self.filename, x=(i * 64), y=8 * 64, width=64, height=64))
         for i in range(8):

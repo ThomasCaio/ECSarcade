@@ -1,5 +1,5 @@
-import win32con
-import win32gui
+# import win32con
+# import win32gui
 
 # the_program_to_hide = win32gui.GetForegroundWindow()
 # win32gui.ShowWindow(the_program_to_hide, win32con.SW_HIDE)
@@ -9,6 +9,7 @@ from components.point import Point, check_collision
 from world import MainWorld
 from components.render import *
 from components.unit import *
+from components.target import Target
 import processors
 
 
@@ -61,7 +62,8 @@ class MyGame(arcade.Window):
                                           Velocity(),
                                           Renderable(static=False, filename='resources/human_warrior.png', center_x=100,
                                                      center_y=100),
-                                          Name('Demnok'))
+                                          Name('Demnok'),
+                                          Target())
         world.create_entity(Enemy(), Renderable(filename='redsquare.png', center_x=720 - 32, center_y=480 - 32),
                             Name('Redsquare'))
 
@@ -72,6 +74,8 @@ class MyGame(arcade.Window):
 
         self.all_sprites.draw()
         self.all_sprites.draw_hit_boxes()
+        for ent, (rend, target) in world.get_components(Renderable, Target):
+            target.on_draw(rend.center_x, rend.center_y, rend.width, rend.height)
 
         arcade.finish_render()
 
@@ -81,11 +85,11 @@ class MyGame(arcade.Window):
         mouse_y = self.get_viewport()[2] + y
         mouse_pos = Point(mouse_x, mouse_y)
 
-        for ent, (rend, name) in world.get_components(Renderable, Name):
+        for ent, (rend, target, name) in world.get_components(Renderable, Target, Name):
             if check_collision(mouse_pos, rend):
-                rend.hover = True
+                target.hover = True
                 break
-            rend.hover = False
+            target.hover = False
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         # world.create_entity(Renderable(filename='resources/hammer.png'), Velocity(speed=5), Projectile())
@@ -165,6 +169,7 @@ class MyGame(arcade.Window):
         vel = world.component_for_entity(self.player, Velocity)
         rend = world.component_for_entity(self.player, Renderable)
         self._update_camera(rend)
+
         vel.x, vel.y = 0, 0
         if self.up_pressed and not self.down_pressed:
             vel.y = vel.speed

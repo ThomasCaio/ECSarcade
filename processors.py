@@ -14,7 +14,6 @@ class AnimationProcessor(Processor):
         from components.render import Renderable
         for ent, (rend) in self.world.get_components(Renderable):
             rend[0].update_animation()
-            rend[0].draw()
 
 
 class ProjectileProcessor(Processor):
