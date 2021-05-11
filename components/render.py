@@ -58,6 +58,6 @@ class Renderable(Sprite):
 def create_rectangle_outline(width, height, color, opacity, line):
     img = PIL.Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = PIL.ImageDraw.Draw(img)
-    draw.rectangle(((0, 0), (width, width)), outline=(*color, opacity), width=line)
+    draw.rectangle(((0, 0), (width, height)), outline=(*color, opacity), width=line)
     name = f"outlinedsquare:{width}x{height}:{color}"
     return Texture(name, img)

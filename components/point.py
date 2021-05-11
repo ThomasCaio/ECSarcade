@@ -16,6 +16,9 @@ class Point:
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return f"<Point: {self.x,self.y}>"
+
 
 def check_collision(p1: [Point, Renderable], p2: [Point, Renderable]):
     if isinstance(p1, Point):

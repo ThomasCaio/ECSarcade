@@ -46,6 +46,7 @@ class MyGame(arcade.Window):
         self.player = None
 
         self.mouse = (0, 0)
+        self.mouse_pos = (0, 0)
 
         self.view_left = 0
         self.view_bottom = 0
@@ -63,8 +64,8 @@ class MyGame(arcade.Window):
                                           Renderable(static=False, filename='resources/human_warrior.png', center_x=100,
                                                      center_y=100),
                                           Name('Demnok'),
-                                          Target())
-        world.create_entity(Enemy(), Renderable(filename='redsquare.png', center_x=720 - 32, center_y=480 - 32),
+                                          )
+        world.create_entity(Enemy(), Renderable(filename='redsquare.png', center_x=720 - 32, center_y=480 - 32), Target(),
                             Name('Redsquare'))
 
         self.all_sprites.extend([x for ent, [x] in world.get_components(Renderable)])
@@ -74,6 +75,8 @@ class MyGame(arcade.Window):
 
         self.all_sprites.draw()
         self.all_sprites.draw_hit_boxes()
+        arcade.draw_rectangle_filled(self.mouse_pos.x, self.mouse_pos.y, 3, 3, arcade.color.WHITE)
+
         for ent, (rend, target) in world.get_components(Renderable, Target):
             target.on_draw(rend.center_x, rend.center_y, rend.width, rend.height)
 
@@ -83,10 +86,11 @@ class MyGame(arcade.Window):
         self.mouse = (x, y)
         mouse_x = self.get_viewport()[0] + x
         mouse_y = self.get_viewport()[2] + y
-        mouse_pos = Point(mouse_x, mouse_y)
+        self.mouse_pos = Point(mouse_x, mouse_y)
+        print(self.mouse, self.mouse_pos, self.zoom)
 
         for ent, (rend, target, name) in world.get_components(Renderable, Target, Name):
-            if check_collision(mouse_pos, rend):
+            if check_collision(self.mouse_pos, rend):
                 target.hover = True
                 break
             target.hover = False
