@@ -1,12 +1,19 @@
 from esper import Processor
+from arcade import check_for_collision_with_list, SpriteList
 
 
 class MovementProcessor(Processor):
     def process(self):
-        from components.render import Velocity, Renderable
+        from components.render import Velocity, Renderable, Block
+        blocked_tiles = SpriteList()
+        [blocked_tiles.append(x[1][0]) for x in self.world.get_components(Renderable, Block)]
         for ent, (vel, rend) in self.world.get_components(Velocity, Renderable):
             rend.center_x += vel.x
+            if check_for_collision_with_list(rend, blocked_tiles):
+                rend.center_x += (vel.x * -1)
             rend.center_y += vel.y
+            if check_for_collision_with_list(rend, blocked_tiles):
+                rend.center_y += (vel.y*-1)
 
 
 class AnimationProcessor(Processor):

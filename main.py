@@ -5,11 +5,10 @@
 # win32gui.ShowWindow(the_program_to_hide, win32con.SW_HIDE)
 
 import arcade
-from components.point import Point, check_collision
+from components.point import Point, point_collision
 from world import MainWorld
 from components.render import *
 from components.unit import *
-from components.target import Target
 import processors
 
 
@@ -63,41 +62,45 @@ class MyGame(arcade.Window):
                                           Velocity(),
                                           Renderable(static=False, filename='resources/human_warrior.png', center_x=100,
                                                      center_y=100),
-                                          Name('Demnok'),
+                                          Name('Demnok'), Block(),
                                           )
-        world.create_entity(Enemy(), Renderable(filename='redsquare.png', center_x=720 - 32, center_y=480 - 32), Target(),
-                            Name('Redsquare'))
+        world.create_entity(Enemy(), Renderable(filename='bluesquare.png', center_x=150, center_y=100),
+                            Name('Redsquare'), Block())
 
         self.all_sprites.extend([x for ent, [x] in world.get_components(Renderable)])
 
     def on_draw(self):
         arcade.start_render()
 
-        self.all_sprites.draw()
-        self.all_sprites.draw_hit_boxes()
-        arcade.draw_rectangle_filled(self.mouse_pos.x, self.mouse_pos.y, 3, 3, arcade.color.WHITE)
-
-        for ent, (rend, target) in world.get_components(Renderable, Target):
-            target.on_draw(rend.center_x, rend.center_y, rend.width, rend.height)
+        for ent, (rend) in world.get_components(Renderable):
+            rend = rend[0]
+            # rend.draw()
+            # rend.on_draw()
+            rend.draw_hit_box()
 
         arcade.finish_render()
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        x += dx
+        y += dy
         self.mouse = (x, y)
-        mouse_x = self.get_viewport()[0] + x
-        mouse_y = self.get_viewport()[2] + y
-        self.mouse_pos = Point(mouse_x, mouse_y)
-        print(self.mouse, self.mouse_pos, self.zoom)
+        prop_x = x / SCREEN_WIDTH
+        prop_y = y / SCREEN_HEIGHT
+        mouse_x = self.get_viewport()[0] + ((SCREEN_WIDTH + self.zoom) * prop_x)
+        mouse_y = self.get_viewport()[2] + ((SCREEN_HEIGHT + (self.zoom * 0.75)) * prop_y)
 
-        for ent, (rend, target, name) in world.get_components(Renderable, Target, Name):
-            if check_collision(self.mouse_pos, rend):
-                target.hover = True
+        self.mouse_pos = Point(mouse_x, mouse_y)
+        for ent, (rend, name) in world.get_components(Renderable, Name):
+            if point_collision(self.mouse_pos, rend):
+                rend.hover = True
                 break
-            target.hover = False
+            rend.hover = False
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
-        # world.create_entity(Renderable(filename='resources/hammer.png'), Velocity(speed=5), Projectile())
-        ...
+        for ent, (rend, name) in world.get_components(Renderable, Name):
+            if point_collision(self.mouse_pos, rend):
+                rend.target = not rend.target
+                break
 
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.W:
