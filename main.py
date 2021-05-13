@@ -86,14 +86,13 @@ class MyGame(arcade.Window):
         for ent, (rend, name) in world.get_components(Renderable, Name):
             rend.draw()
             rend.on_draw()
-            # arcade.draw_text(name.name, rend.center_x-32, rend.center_y-50, arcade.color.WHITE)
+            arcade.draw_text(name.name, rend.center_x-32, rend.center_y-50, arcade.color.WHITE)
             # rend.draw_hit_box()
 
         if self.fps is not None:
             output = f"FPS: {self.fps:.0f}"
-            print(output)
-            # arcade.draw_text(output, self.view_left+20, self.view_bottom+20, arcade.color.BLACK, 18)
-            # arcade.draw_text(f"Sprites: {len(world.get_component(Renderable))}", self.view_left+20, self.view_bottom+60, arcade.color.BLACK, 18)
+            arcade.draw_text(output, self.view_left+20, self.view_bottom+20, arcade.color.BLACK, 18)
+            arcade.draw_text(f"Sprites: {len(world.get_component(Renderable))}", self.view_left+20, self.view_bottom+60, arcade.color.BLACK, 18)
         arcade.finish_render()
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):

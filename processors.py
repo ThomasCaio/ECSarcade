@@ -67,6 +67,8 @@ class MonsterAI(Processor):
             else:
                 vel.x = 0
                 vel.y = 0
+        for i in range(len(self.targets)):
+            self.targets.pop()
 
     def follow_target(self, monster, target, velocity):
         if monster.center_y < target.center_y:
