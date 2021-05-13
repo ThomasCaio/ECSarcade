@@ -10,6 +10,7 @@ from world import MainWorld
 from components.render import *
 from components.unit import *
 import processors
+import timeit
 
 
 world = MainWorld()
@@ -51,6 +52,10 @@ class MyGame(arcade.Window):
         self.min_zoom = -600
         self.max_zoom = 600
 
+        self.frame_count = 0
+        self.fps = 0
+        self.fps_start_timer = None
+
     def setup(self):
         arcade.set_background_color(arcade.color.AMAZON)
         self.all_sprites = arcade.SpriteList()
@@ -63,19 +68,32 @@ class MyGame(arcade.Window):
 
         for i in range(10):
             world.create_entity(Monster(), Velocity(), Renderable(static=False, filename='resources/human_warrior.png', center_x=150, center_y=50+(i*60)),
-                                Name(f'Redsquare #{i}'), Block())
+                                Name(f'Monster #{i}'), Block())
 
         self.all_sprites.extend([x for ent, [x] in world.get_components(Renderable)])
 
     def on_draw(self):
+        fps_calculation_freq = 60
+        if self.frame_count % fps_calculation_freq == 0:
+            if self.fps_start_timer is not None:
+                total_time = timeit.default_timer() - self.fps_start_timer
+                self.fps = fps_calculation_freq / total_time
+            self.fps_start_timer = timeit.default_timer()
+        self.frame_count += 1
+
         arcade.start_render()
 
-        for ent, (rend) in world.get_components(Renderable):
-            rend = rend[0]
+        for ent, (rend, name) in world.get_components(Renderable, Name):
             rend.draw()
             rend.on_draw()
+            # arcade.draw_text(name.name, rend.center_x-32, rend.center_y-50, arcade.color.WHITE)
             # rend.draw_hit_box()
 
+        if self.fps is not None:
+            output = f"FPS: {self.fps:.0f}"
+            print(output)
+            # arcade.draw_text(output, self.view_left+20, self.view_bottom+20, arcade.color.BLACK, 18)
+            # arcade.draw_text(f"Sprites: {len(world.get_component(Renderable))}", self.view_left+20, self.view_bottom+60, arcade.color.BLACK, 18)
         arcade.finish_render()
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
@@ -95,10 +113,22 @@ class MyGame(arcade.Window):
             rend.hover = False
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
-        for ent, (rend, monster, name) in world.get_components(Renderable, Monster, Name):
-            if point_collision(self.mouse_pos, rend):
-                rend.target = not rend.target
-                break
+        if button == 4:
+            for ent, (rend, monster, name) in world.get_components(Renderable, Monster, Name):
+                if point_collision(self.mouse_pos, rend):
+                    rend.target = not rend.target
+                    break
+        elif button == 1:
+            player = world.component_for_entity(self.player, Renderable)
+            monsters = arcade.SpriteList()
+            names = []
+            [monsters.append(x[1][0]) for x in world.get_components(Renderable, Monster, Name)]
+            [names.append(x[1][2]) for x in world.get_components(Renderable, Monster, Name)]
+            for m in monsters:
+                print(arcade.get_distance_between_sprites(player, m), names[monsters.index(m)])
+
+            # mon, dist = arcade.get_closest_sprite(player, monsters)
+            # print(mon, dist, names[monsters.index(mon)])
 
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.W:
