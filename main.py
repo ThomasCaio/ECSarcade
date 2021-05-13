@@ -15,24 +15,21 @@ import processors
 world = MainWorld()
 world.add_processor(processors.MovementProcessor())
 world.add_processor(processors.AnimationProcessor())
+world.add_processor(processors.MonsterAI())
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-VIEWPORT_MARGIN_X = SCREEN_WIDTH // 2
-VIEWPORT_MARGIN_Y = SCREEN_HEIGHT // 2
+VIEWPORT_MARGIN_X = (SCREEN_WIDTH // 2) - 16
+VIEWPORT_MARGIN_Y = (SCREEN_HEIGHT // 2) - 16
 
 SCREEN_TITLE = "Starting Template"
-
-
-class Name:
-    def __init__(self, name):
-        self.name = name
 
 
 class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
+        self.center_window()
 
         self.all_sprites = None
         self.hover = None
@@ -51,21 +48,22 @@ class MyGame(arcade.Window):
         self.view_bottom = 0
 
         self.zoom = 0
-        self.min_zoom = -300
-        self.max_zoom = 300
+        self.min_zoom = -600
+        self.max_zoom = 600
 
     def setup(self):
         arcade.set_background_color(arcade.color.AMAZON)
         self.all_sprites = arcade.SpriteList()
 
         self.player = world.create_entity(Player(),
-                                          Velocity(),
+                                          Velocity(speed=2),
                                           Renderable(static=False, filename='resources/human_warrior.png', center_x=100,
                                                      center_y=100),
-                                          Name('Demnok'), Block(),
-                                          )
-        world.create_entity(Enemy(), Renderable(filename='bluesquare.png', center_x=150, center_y=100),
-                            Name('Redsquare'), Block())
+                                          Name('Demnok'), Block())
+
+        for i in range(10):
+            world.create_entity(Monster(), Velocity(), Renderable(static=False, filename='resources/human_warrior.png', center_x=150, center_y=50+(i*60)),
+                                Name(f'Redsquare #{i}'), Block())
 
         self.all_sprites.extend([x for ent, [x] in world.get_components(Renderable)])
 
@@ -74,9 +72,9 @@ class MyGame(arcade.Window):
 
         for ent, (rend) in world.get_components(Renderable):
             rend = rend[0]
-            # rend.draw()
-            # rend.on_draw()
-            rend.draw_hit_box()
+            rend.draw()
+            rend.on_draw()
+            # rend.draw_hit_box()
 
         arcade.finish_render()
 
@@ -90,14 +88,14 @@ class MyGame(arcade.Window):
         mouse_y = self.get_viewport()[2] + ((SCREEN_HEIGHT + (self.zoom * 0.75)) * prop_y)
 
         self.mouse_pos = Point(mouse_x, mouse_y)
-        for ent, (rend, name) in world.get_components(Renderable, Name):
+        for ent, (rend, monster, name) in world.get_components(Renderable, Monster, Name):
             if point_collision(self.mouse_pos, rend):
                 rend.hover = True
                 break
             rend.hover = False
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
-        for ent, (rend, name) in world.get_components(Renderable, Name):
+        for ent, (rend, monster, name) in world.get_components(Renderable, Monster, Name):
             if point_collision(self.mouse_pos, rend):
                 rend.target = not rend.target
                 break
@@ -124,7 +122,7 @@ class MyGame(arcade.Window):
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
         scroll_y *= -30
-        if not (scroll_y > 0 and self.zoom > self.max_zoom) and not (scroll_y < 0 and self.zoom < self.min_zoom):
+        if not (scroll_y >= 0 and self.zoom >= self.max_zoom) and not (scroll_y <= 0 and self.zoom <= self.min_zoom):
             self.zoom += scroll_y
 
     def _update_camera(self, player):
@@ -191,11 +189,11 @@ class MyGame(arcade.Window):
             vel.x = vel.speed
             rend.direction = 3
 
-        if vel.x == 0 and vel.y == 0:
-            rend.idle = True
-            rend.texture = rend.walking_textures[rend.direction][0]
-        else:
-            rend.idle = False
+        # if vel.x == 0 and vel.y == 0:
+            # rend.idle = True
+            # rend.texture = rend.walking_textures[rend.direction][0]
+        # else:
+            # rend.idle = False
 
         world.process()
 

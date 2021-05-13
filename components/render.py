@@ -43,7 +43,7 @@ class Renderable(Sprite):
             draw_polygon_outline(self.points, color.RED)
             return
         elif self.target and self.hover:
-            draw_polygon_outline(self.points, color.ORANGE_PEEL)
+            draw_polygon_outline(self.points, color.ORIOLES_ORANGE)
 
     def load_spritesheet(self):
         for i in range(8):
@@ -56,10 +56,8 @@ class Renderable(Sprite):
             self.walking_textures[RIGHT].append(load_texture(self.filename, x=(i * 64), y=11 * 64, width=64, height=64))
 
         self.texture = self.walking_textures[UP][0]
-        # POINTS : ((-19.0, -17.0), (-12.0, -29.0), (12.0, -29.0), (17.0, -19.0),
-        #              (17.0, 7.0), (5.0, 19.0), (-5.0, 19.0), (-19.0, 5.0))
-        points = ((-19.0, -17.0), (-12.0, -29.0), (12.0, -29.0), (17.0, -19.0),
-                  (17.0, 7.0), (5.0, 19.0), (-5.0, 19.0), (-19.0, 5.0))
+        points = ((-19.0, -19.0), (-12.0, -30.0), (12.0, -30.0), (17.0, -19.0),
+                  (17.0, 7.0), (12.0, 19.0), (-12.0, 19.0), (-19.0, 7.0))
         self.set_hit_box(points)
 
     def update_animation(self, delta_time: float = 1 / 60):
