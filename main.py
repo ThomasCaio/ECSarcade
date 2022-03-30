@@ -56,6 +56,10 @@ class MyGame(arcade.Window):
         self.fps = 0
         self.fps_start_timer = None
 
+        self.update_count = 0
+        self.updates = 0
+        self.update_start_timer = None
+
     def setup(self):
         arcade.set_background_color(arcade.color.AMAZON)
         self.all_sprites = arcade.SpriteList()
@@ -66,7 +70,7 @@ class MyGame(arcade.Window):
                                                      center_y=100),
                                           Name('Demnok'), Block())
 
-        for i in range(10):
+        for i in range(50):
             world.create_entity(Monster(), Velocity(), Renderable(static=False, filename='resources/human_warrior.png', center_x=150, center_y=50+(i*60)),
                                 Name(f'Monster #{i}'), Block())
 
@@ -88,6 +92,10 @@ class MyGame(arcade.Window):
             rend.on_draw()
             arcade.draw_text(name.name, rend.center_x-32, rend.center_y-50, arcade.color.WHITE)
             # rend.draw_hit_box()
+
+        if self.updates is not None:
+            output = f"Updates: {self.updates:.0f}"
+            arcade.draw_text(output, self.view_left+20, self.view_bottom+100, arcade.color.BLACK, 18)
 
         if self.fps is not None:
             output = f"FPS: {self.fps:.0f}"
@@ -198,6 +206,14 @@ class MyGame(arcade.Window):
                                 top)
 
     def on_update(self, delta_time):
+        fps_calculation_freq = 60
+        if self.update_count % fps_calculation_freq == 0:
+            if self.update_start_timer is not None:
+                total_time = timeit.default_timer() - self.update_start_timer
+                self.updates = fps_calculation_freq / total_time
+            self.update_start_timer = timeit.default_timer()
+        self.update_count += 1
+
         self.on_mouse_motion(*self.mouse, 0, 0)
 
         vel = world.component_for_entity(self.player, Velocity)
@@ -217,13 +233,6 @@ class MyGame(arcade.Window):
         elif self.right_pressed and not self.left_pressed:
             vel.x = vel.speed
             rend.direction = 3
-
-        # if vel.x == 0 and vel.y == 0:
-            # rend.idle = True
-            # rend.texture = rend.walking_textures[rend.direction][0]
-        # else:
-            # rend.idle = False
-
         world.process()
 
 

@@ -36,7 +36,8 @@ class MovementProcessor(Processor):
             elif vel.x < 0:
                 rend.direction = 1
 
-            self.blocked_tiles.remove(rend)
+        for b in range(len(self.blocked_tiles)):
+            self.blocked_tiles.pop()
 
 
 class AnimationProcessor(Processor):
@@ -73,6 +74,7 @@ class MonsterAI(Processor):
     def follow_target(self, monster, target, velocity):
         if monster.center_y < target.center_y:
             velocity.y = min(velocity.speed, target.center_y - monster.center_y)
+            print(velocity.x, velocity.y)
         elif monster.center_y > target.center_y:
             velocity.y = min(velocity.speed, monster.center_y - target.center_y) *(-1)
         else:
